@@ -1,9 +1,35 @@
 import React, { useState } from 'react';
+import formatDistanceStrict from 'date-fns/formatDistanceStrict';
+import ru from 'date-fns/locale/ru';
 import './App.css';
 
 function DateTime(props) {
   return <p className="date">{props.date}</p>;
 }
+
+function withPrettyDateTime(Component) {
+  return function (props) {
+    let prettyDate;
+    let unit;
+    const seconds = (new Date() - new Date(props.date)) / 1000;
+
+    if (seconds < 3600) {
+      unit = 'minute';
+    } else if (seconds < 3600 * 24) {
+      unit = 'hour';
+    } else {
+      unit = 'day';
+    }
+    prettyDate = formatDistanceStrict(new Date(props.date), new Date(), {
+      addSuffix: true,
+      unit: unit,
+      locale: ru,
+    });
+    return <Component {...props} date={prettyDate} />;
+  };
+}
+
+const DateTimePretty = withPrettyDateTime(DateTime);
 
 function Video(props) {
   return (
@@ -14,7 +40,7 @@ function Video(props) {
         allow="autoplay; encrypted-media"
         allowfullscreen
       ></iframe>
-      <DateTime date={props.date} />
+      <DateTimePretty date={props.date} />
     </div>
   );
 }
